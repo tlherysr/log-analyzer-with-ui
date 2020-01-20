@@ -28,6 +28,7 @@ class CursBaseDialog:
         self.focus = 0
         self.enterKey = False
         self.win.keypad(1)
+        self.menu = ['Info', 'Convert', 'Analyse', 'Visualise', 'Exit']
         curses.curs_set(0)
         curses.noecho()
         curses.cbreak()
@@ -42,16 +43,21 @@ class CursBaseDialog:
         elif key == ord('\n'):
             self.enterKey = True
 
-    def up_down_key_event_handler(self, max):
+    def up_down_key_event_handler(self):
         self.win.refresh()
         key = self.win.getch()
         if key == curses.KEY_UP and self.focus != 0:
             self.focus -= 1
-        elif key == curses.KEY_DOWN and self.focus != max - 1:
+        elif key == curses.KEY_DOWN and self.focus != len(self.menu) - 1:
             self.focus += 1
         elif key == ord('\n'):
-            # if user selected last row, exit the program
-            self.enterKey = True
+            # if user selected "Exit", exit the program
+            if self.menu[self.focus] == "Exit":
+                self.enterKey = True
+            # if user wants intro, give it to him :D
+            elif self.menu[self.focus] == "Info":
+                self.win.addstr("YOU CHOOSE INFO NOW")
+            # FIXME: add the others one by one!!!
 
 class AskYesCancelDialog(CursBaseDialog):
     def askYesOrCancel(self):
@@ -87,7 +93,9 @@ class AskYesCancelDialog(CursBaseDialog):
 
 class AskFileSaveDialog(CursBaseDialog):
     def fileSave(self):
-        if self.title: self.win.addstr(0, int(self.x / 2 - len(self.title) / 2), self.title, self.title_attr)
+        if self.title:
+            self.win.addstr(0, int(self.x / 2 - len(self.title) / 2), self.title, self.title_attr)
+
         for (i, msg) in enumerate(self.message.split('\n')):
             self.win.addstr(i + 1, 2, msg, self.msg_attr)
 
@@ -144,12 +152,16 @@ class AskFileSaveDialog(CursBaseDialog):
 
 class ShowMessageDialog(CursBaseDialog):
     def showMessage(self):
-        if self.title: self.win.addstr(0, int(self.x / 2 - len(self.title) / 2), self.title, self.title_attr)
+        if self.title:
+            self.win.addstr(0, int(self.x / 2 - len(self.title) / 2), self.title, self.title_attr)
+
         for (i, msg) in enumerate(self.message.split('\n')):
             self.win.addstr(i + 1, 2, msg, self.msg_attr)
+
         rectangle(self.win, 8, int(self.x / 2 - 2), 2, 3, self.opt_attr | self.focus_attr)
         self.win.addstr(9, int(self.x / 2 - 1), 'Ok', self.opt_attr | self.focus_attr)
-        if self.win.getch() != ord('\n'):  self.showMessage()
+        if self.win.getch() != ord('\n'):
+            self.showMessage()
 
 
 class ProgressBarDialog(CursBaseDialog):
@@ -206,29 +218,31 @@ class ShowWelcomePage(CursBaseDialog):
         if self.title:
             self.win.addstr(0, int(self.x / 2 - len(self.title) / 2), self.title, self.title_attr)
 
-        menu = ['Info', 'Convert', 'Analyse', 'Visualise', 'Exit']
-
         while not self.enterKey:
-            for idx, row in enumerate(menu):
+            for idx, row in enumerate(self.menu):
                 if idx == self.focus:
                     self.win.addstr(int(self.y / 2 + idx), int(self.x / 2 - len(row) // 2), row, self.opt_attr | self.focus_attr)
                 else:
                     self.win.addstr(int(self.y / 2 + idx), int(self.x / 2 - len(row) // 2), row, self.opt_attr)
-            self.up_down_key_event_handler(len(menu))
 
-        if self.focus == 0:
-            curses.echo()
-            curses.cbreak()
-            curses.curs_set(1)
-            self.win.keypad(False)
-            self.win.addstr(4, 2, 'Please enter save path in the following:')
-            self.win.addstr(6, 2, ' ' * 30, curses.A_UNDERLINE)
-            filepath = self.win.getstr(6, 2, curses.A_BOLD).decode('latin1')
+            self.up_down_key_event_handler()
 
-        elif self.focus == 1:
-            filepath = '.'
-        else:
-            filepath = None
+        filepath = "none"
+        # if self.focus == 0:
+        #     # curses.echo()
+        #     # curses.cbreak()
+        #     # curses.curs_set(0)
+        #     # self.win.keypad(False)
+        #     self.win.refresh()
+        #     self.win.addstr(4, 2, 'Please enter save path in the following:')
+        #     self.win.addstr(6, 2, ' ' * 30, curses.A_UNDERLINE)
+        #     # filepath = self.win.getstr(6, 2, curses.A_BOLD).decode('latin1')
+        #     filepath = None
+        #
+        # elif self.focus == 1:
+        #     filepath = '.'
+        # else:
+        #     filepath = None
         return filepath
 
 def showMessageDialog(**options):
