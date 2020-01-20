@@ -1,13 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="158e7c9a-bff3-4b65-8ec4-08974fa1bd01" name="Default Changelist" comment="" />
+    <list default="true" id="158e7c9a-bff3-4b65-8ec4-08974fa1bd01" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
   <component name="ProjectId" id="1Wdd80JZTXKMN5zBS9FlFQdFXyX" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showExcludedFiles" value="true" />
@@ -95,7 +101,8 @@
       <workItem from="1579483246161" duration="1813000" />
       <workItem from="1579485672248" duration="22000" />
       <workItem from="1579507093493" duration="1062000" />
-      <workItem from="1579508170119" duration="1790000" />
+      <workItem from="1579508170119" duration="2260000" />
+      <workItem from="1579530287377" duration="251000" />
     </task>
     <servers />
   </component>
@@ -127,6 +134,18 @@
       <screen x="0" y="25" width="2560" height="1415" />
     </state>
     <state width="2514" height="373" key="GridCell.Tab.0.right/0.25.2560.1415/2560.242.1920.1080@0.25.2560.1415" timestamp="1579484075251" />
+    <state x="847" y="507" width="856" height="450" key="git4idea.merge.GitPullDialog" timestamp="1579530545017">
+      <screen x="0" y="25" width="2560" height="1415" />
+    </state>
+    <state x="847" y="507" width="856" height="450" key="git4idea.merge.GitPullDialog/0.25.2560.1415/2560.242.1920.1080@0.25.2560.1415" timestamp="1579530545017" />
+    <state x="859" y="628" key="git4idea.ui.GitStashDialog" timestamp="1579530423009">
+      <screen x="0" y="25" width="2560" height="1415" />
+    </state>
+    <state x="859" y="628" key="git4idea.ui.GitStashDialog/0.25.2560.1415/2560.242.1920.1080@0.25.2560.1415" timestamp="1579530423009" />
+    <state x="859" y="575" width="832" height="314" key="git4idea.ui.GitUnstashDialog" timestamp="1579530632957">
+      <screen x="0" y="25" width="2560" height="1415" />
+    </state>
+    <state x="859" y="575" width="832" height="314" key="git4idea.ui.GitUnstashDialog/0.25.2560.1415/2560.242.1920.1080@0.25.2560.1415" timestamp="1579530632957" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/CI5235_K1818793_Talha$convert.coverage" NAME="convert Coverage Results" MODIFIED="1579484070593" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
