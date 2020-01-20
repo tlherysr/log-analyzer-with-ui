@@ -1,0 +1,84 @@
+Event ID:1102
+Event Count:15
+
+Event ID:4611
+Event Count:2
+
+Event ID:4624
+Event Count:46
+
+Event ID:4634
+Event Count:1
+
+Event ID:4648
+Event Count:6
+
+Event ID:4661
+Event Count:19
+
+Event ID:4662
+Event Count:33
+
+Event ID:4663
+Event Count:114
+
+Event ID:4672
+Event Count:12
+
+Event ID:4673
+Event Count:2
+
+Event ID:4688
+Event Count:35
+
+Event ID:4698
+Event Count:2
+
+Event ID:4699
+Event Count:2
+
+Event ID:4702
+Event Count:4
+
+Event ID:4703
+Event Count:1
+
+Event ID:4719
+Event Count:8
+
+Event ID:4732
+Event Count:2
+
+Event ID:4738
+Event Count:5
+
+Event ID:4742
+Event Count:4
+
+Event ID:4776
+Event Count:7
+
+Event ID:4798
+Event Count:2
+
+Event ID:4799
+Event Count:1
+
+Event ID:4985
+Event Count:2
+
+Event ID:5136
+Event Count:42
+
+Event ID:5140
+Event Count:6
+
+Event ID:5142
+Event Count:1
+
+Event ID:5156
+Event Count:92
+
+Event ID:5158
+Event Count:14
+
