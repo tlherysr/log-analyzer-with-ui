@@ -97,6 +97,7 @@ def read_evtx_files():
 
 def main():
     startTime = process_time()
+
     print("[*] First of all let's do some checks.")
 
     # Check if the required logfile exist. If not, create it.

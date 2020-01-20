@@ -58,6 +58,9 @@ def main(stdscr):
             print_center(stdscr, "You selected '{}'".format(menu[current_row]))
             if menu[current_row] == "Info":
                 print_center(stdscr, info)
+                print("ASDASDADASDSADASDSD")
+                print("Second Row")
+                print("Third Row")
             elif menu[current_row] == "Convert":
                 # print_center(stdscr, "running convert.py")
                 convert.main()
