@@ -7,13 +7,14 @@ import sys
 encoding = sys.getdefaultencoding()
 
 
-menu = ['Info', 'Convert', 'Analyse', 'Visualise', 'Exit']
+
 
 
 class CursBaseDialog:
     def __init__(self, **options):
         self.maxy, self.maxx = curses.LINES, curses.COLS
-        self.win = curses.newwin(24, 80, int((self.maxy / 2 - 12)), int((self.maxx / 2) - 40))
+        # self.win = curses.newwin(24, 80, int((self.maxy / 2 - 12)), int((self.maxx / 2) - 40))
+        self.win = curses.newwin(self.maxy, self.maxx)
         self.win.box()
         self.y, self.x = self.win.getmaxyx()
         self.title_attr = options.get('title_attr', curses.A_BOLD | curses.A_STANDOUT)
@@ -22,7 +23,7 @@ class CursBaseDialog:
         self.focus_attr = options.get('focus_attr', curses.A_BOLD | curses.A_STANDOUT)
         self.title = options.get('title', curses.A_NORMAL)
         self.message = options.get('message', '')
-        self.win.addstr(0, 0, ' ' * 80, self.title_attr)
+        self.win.addstr(0, 0, ' ' * self.maxx, self.title_attr)
         self.win.keypad(1)
         self.focus = 0
         self.enterKey = False
@@ -41,10 +42,21 @@ class CursBaseDialog:
         elif key == ord('\n'):
             self.enterKey = True
 
+    def up_down_key_event_handler(self, max):
+        self.win.refresh()
+        key = self.win.getch()
+        if key == curses.KEY_UP and self.focus != 0:
+            self.focus -= 1
+        elif key == curses.KEY_DOWN and self.focus != max - 1:
+            self.focus += 1
+        elif key == ord('\n'):
+            # if user selected last row, exit the program
+            self.enterKey = True
 
 class AskYesCancelDialog(CursBaseDialog):
     def askYesOrCancel(self):
-        if self.title: self.win.addstr(0, int(self.x / 2 - len(self.title) / 2), self.title, self.title_attr)
+        if self.title:
+            self.win.addstr(0, int(self.x / 2 - len(self.title) / 2), self.title, self.title_attr)
         for (i, msg) in enumerate(self.message.split('\n')):
             self.win.addstr(i + 1, 2, msg, self.msg_attr)
         option = ('Yes   ', 'Cancel')
@@ -88,7 +100,7 @@ class AskFileSaveDialog(CursBaseDialog):
             rectangle(self.win, 8, space - 1, 2, len(i) + 1, self.opt_attr)
             space = space + len(i) + 8
 
-        while self.enterKey != True:
+        while not self.enterKey:
             if self.focus == 0:
                 self.win.addstr(9, pos_x[0], 'Save as', self.focus_attr | self.opt_attr)
             else:
@@ -190,25 +202,41 @@ class ProgressBarDialog(CursBaseDialog):
 
 
 class ShowWelcomePage(CursBaseDialog):
-    def showWelcomePage(self, selected_row_idx):
-        if self.title: self.win.addstr(0, int(self.x / 2 - len(self.title) / 2), self.title, self.title_attr)
-        for (i, msg) in enumerate(self.message.split('\n')):
-            self.win.addstr(i + 1, 2, msg, self.msg_attr)
-        # rectangle(self.win, 8, int(self.x / 2 - 2), 2, 3, self.opt_attr | self.focus_attr)
-        for idx, row in enumerate(menu):
-            self.win.addstr(int(self.y / 2 + idx), int(self.x / 2 - len(row) // 2), row, self.opt_attr)
+    def showWelcomePage(self):
+        if self.title:
+            self.win.addstr(0, int(self.x / 2 - len(self.title) / 2), self.title, self.title_attr)
 
-        # self.win.addstr(int(self.y / 2), int(self.x / 2 - 2), 'INFO', self.opt_attr | self.focus_attr)
-        # self.win.addstr(int(self.y / 2 + 1), int(self.x / 2 - 3), 'CONVERT', self.opt_attr | self.focus_attr)
-        if self.win.getch() != ord('\n'):  self.showWelcomePage()
+        menu = ['Info', 'Convert', 'Analyse', 'Visualise', 'Exit']
 
+        while not self.enterKey:
+            for idx, row in enumerate(menu):
+                if idx == self.focus:
+                    self.win.addstr(int(self.y / 2 + idx), int(self.x / 2 - len(row) // 2), row, self.opt_attr | self.focus_attr)
+                else:
+                    self.win.addstr(int(self.y / 2 + idx), int(self.x / 2 - len(row) // 2), row, self.opt_attr)
+            self.up_down_key_event_handler(len(menu))
+
+        if self.focus == 0:
+            curses.echo()
+            curses.cbreak()
+            curses.curs_set(1)
+            self.win.keypad(False)
+            self.win.addstr(4, 2, 'Please enter save path in the following:')
+            self.win.addstr(6, 2, ' ' * 30, curses.A_UNDERLINE)
+            filepath = self.win.getstr(6, 2, curses.A_BOLD).decode('latin1')
+
+        elif self.focus == 1:
+            filepath = '.'
+        else:
+            filepath = None
+        return filepath
 
 def showMessageDialog(**options):
     return ShowMessageDialog(**options).showMessage()
 
 
 def showWelcomePage(**options):
-    return ShowWelcomePage(**options).showWelcomePage(selected_row_idx=0)
+    return ShowWelcomePage(**options).showWelcomePage()
 
 
 def askFileSaveDialog(**options):
@@ -258,11 +286,11 @@ if __name__ == '__main__':
         COLOR_BLUE = curses.color_pair(3)
         COLOR_NORMAL = curses.color_pair(4)
 
-        askFileSaveDialog(message='Ask file save path\njust for test', title='Ask save file Dialog')
-        askYesCancelDialog(message='Ask Yes Cancel \njust for test', title='Ask Yes Cancel Dialog',
-                           title_attr=curses.A_STANDOUT | curses.A_BOLD)
-        showMessageDialog(message='Display message for test ', title='Display message ')
-        showWelcomePage(message='Hello this is convert module for converting evtx logs files to xml files.', title='Convert Module Info')
+        showWelcomePage(title='CI5235-Ethical Hacking')
+        # askFileSaveDialog(message='Ask file save path\njust for test', title='Ask save file Dialog')
+        # askYesCancelDialog(message='Ask Yes Cancel \njust for test', title='Ask Yes Cancel Dialog',
+        #                    title_attr=curses.A_STANDOUT | curses.A_BOLD)
+        # showMessageDialog(message='Display message for test ', title='Display message ')
 
         maxValue = 100
         progress = progressBarDialog(maxValue=maxValue, message='Progressbar for test', title='Progress test',
