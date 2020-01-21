@@ -3,6 +3,8 @@
 
 import curses
 import sys
+import os
+import sample_convert
 
 encoding = sys.getdefaultencoding()
 INFO = """ Learning Outcomes:
@@ -76,29 +78,28 @@ class ProgressBarDialog(CursBaseDialog):
     def drawProgressBarBox(self):
         from curses.textpad import rectangle as rect
         self.win.attrset(self.clr1 | curses.A_BOLD)
-        hight, width = 2, 50
-        y, x = 7, 3
-        rect(self.win, y - 1, x - 1, hight + y, width + x)
+        height, width = 2, 50
+        y, x = 10, 3
+        rect(self.win, y - 1, x - 1, height + y, width + x)
 
     def displayMessage(self):
-        if self.title:
-            self.win.addstr(0, int(self.x / 2 - len(self.title) / 2), self.title, curses.A_BOLD | curses.A_STANDOUT)
+        # Display the message if any
         for (i, msg) in enumerate(self.message.split('\n')):
             self.win.addstr(i + 1, 2, msg, curses.A_BOLD)
 
     def progress(self, currentValue):
-        percentcomplete = int((100 * currentValue / self.maxValue))
-        blockValue = int(percentcomplete / 2)
+        percentage_complete = int((100 * currentValue / self.maxValue))
+        blockValue = int(percentage_complete / 2)
         maxValue = str(self.maxValue)
         currentValue = str(currentValue)
 
-        self.win.addstr(9, int(self.x / 2 - len(maxValue)) - 2, "%s of %s" % (currentValue, maxValue))
+        self.win.addstr(9, int(self.x / 2 - len(maxValue)) - 2, "{} of {}".format(currentValue, maxValue))
 
         for i in range(self.blockValue, blockValue):
-            self.win.addstr(7, i + 3, '▋', self.clr2 | curses.A_BOLD)
-            self.win.addstr(8, i + 3, '▋', self.clr2 | curses.A_NORMAL)
+            self.win.addstr(10, i + 3, '▋', self.clr2 | curses.A_BOLD)
+            self.win.addstr(11, i + 3, '▋', self.clr2 | curses.A_NORMAL)
 
-        if percentcomplete == 100:
+        if percentage_complete == 100:
             self.win.addstr(10, int(self.x / 2) - 3, 'Finish', curses.A_STANDOUT)
             self.win.getch()
         self.blockValue = blockValue
@@ -107,6 +108,8 @@ class ProgressBarDialog(CursBaseDialog):
 
 class ShowWelcomePage(CursBaseDialog):
     def showWelcomePage(self):
+        progress = progressBarDialog(maxValue=100, message='Progressbar for Converting Process', title='Converting Evtx Log Files to XML Files  ',
+                                     clr1=COLOR_RED, clr2=COLOR_GREEN)
         while not self.enterKey:
             for idx, row in enumerate(self.menu):
                 if idx == self.focus:
@@ -130,7 +133,18 @@ class ShowWelcomePage(CursBaseDialog):
                     show_info_page(title='Info Page')
                     self.__init__(title='CI5235 Ethical Hacking')
                 elif self.menu[self.focus] == 'Convert':
-                    self.win.addstr(10,10, 'Convert this time')
+                    folders = [f for f in os.scandir(sample_convert.EVTX_LOGS_PATH) if f.is_dir()]
+                    for counter, folder in enumerate(folders, 1):
+
+                        files = [f for f in os.scandir(folder.path)]
+                        for file in files:
+                            try:
+                                for i in range(101):
+                                    sample_convert.xml_converter(file.path)
+                                    progress(i)
+                            except:
+                                print("Unexpected error:", sys.exc_info()[0])
+                                raise
                 else:
                     self.enterKey = True
         return None
@@ -204,7 +218,7 @@ if __name__ == '__main__':
                                      clr1=COLOR_RED, clr2=COLOR_GREEN)
         for i in range(maxValue + 1):
             progress(i)
-            sleep(0.01)
+            sleep(0.1)
 
         curses.endwin()
     except:
