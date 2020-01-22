@@ -68,39 +68,43 @@ class ProgressBarDialog(CursBaseDialog):
         self.win.addstr(0, 0, ' ' * self.x, curses.A_STANDOUT)
 
         # Display message
-        self.displayMessage()
+        self.display_message()
 
         # Draw the ProgressBar Box
-        self.drawProgressBarBox()
+        self.draw_progress_bar_box()
 
         self.win.refresh()
 
-    def drawProgressBarBox(self):
+    def draw_progress_bar_box(self):
         from curses.textpad import rectangle as rect
         self.win.attrset(self.clr1 | curses.A_BOLD)
         height, width = 2, 50
-        y, x = 10, 3
+        y, x = int(self.maxy/2)-5, int(self.maxx/2)-26
         rect(self.win, y - 1, x - 1, height + y, width + x)
 
-    def displayMessage(self):
+    def display_message(self):
+        # Print the title if there is any
+        if self.title:
+            self.win.addstr(0, int(self.x / 2 - len(self.title) / 2), self.title, self.title_attr)
+
         # Display the message if any
         for (i, msg) in enumerate(self.message.split('\n')):
             self.win.addstr(i + 1, 2, msg, curses.A_BOLD)
 
-    def progress(self, currentValue):
-        percentage_complete = int((100 * currentValue / self.maxValue))
+    def progress(self, current_value):
+        percentage_complete = int((100 * current_value / self.maxValue))
         blockValue = int(percentage_complete / 2)
         maxValue = str(self.maxValue)
-        currentValue = str(currentValue)
+        currentValue = str(current_value)
 
-        self.win.addstr(9, int(self.x / 2 - len(maxValue)) - 2, "{} of {}".format(currentValue, maxValue))
+        self.win.addstr(int(self.maxy/2), int(self.x / 2 - len(maxValue)) - 2, "{} of {}".format(currentValue, maxValue))
 
         for i in range(self.blockValue, blockValue):
-            self.win.addstr(10, i + 3, '▋', self.clr2 | curses.A_BOLD)
-            self.win.addstr(11, i + 3, '▋', self.clr2 | curses.A_NORMAL)
+            self.win.addstr(int(self.maxy/2)-5, int(self.maxx/2)+i-26, '▋', self.clr2 | curses.A_BOLD)
+            self.win.addstr(int(self.maxy/2)-4, int(self.maxx/2)+i-26, '▋', self.clr2 | curses.A_NORMAL)
 
         if percentage_complete == 100:
-            self.win.addstr(10, int(self.x / 2) - 3, 'Finish', curses.A_STANDOUT)
+            self.win.addstr(int(self.maxy/2)+1, int(self.x / 2) - 3, 'Finish', curses.A_STANDOUT)
             self.win.getch()
         self.blockValue = blockValue
         self.win.refresh()
@@ -108,12 +112,11 @@ class ProgressBarDialog(CursBaseDialog):
 
 class ShowWelcomePage(CursBaseDialog):
     def showWelcomePage(self):
-        progress = progressBarDialog(maxValue=100, message='Progressbar for Converting Process', title='Converting Evtx Log Files to XML Files  ',
-                                     clr1=COLOR_RED, clr2=COLOR_GREEN)
         while not self.enterKey:
             for idx, row in enumerate(self.menu):
                 if idx == self.focus:
-                    self.win.addstr(int(self.y / 2 + idx), int(self.x / 2 - len(row) // 2), row, self.opt_attr | self.focus_attr)
+                    self.win.addstr(int(self.y / 2 + idx), int(self.x / 2 - len(row) // 2), row,
+                                    self.opt_attr | self.focus_attr)
                 else:
                     self.win.addstr(int(self.y / 2 + idx), int(self.x / 2 - len(row) // 2), row, self.opt_attr)
 
@@ -133,18 +136,8 @@ class ShowWelcomePage(CursBaseDialog):
                     show_info_page(title='Info Page')
                     self.__init__(title='CI5235 Ethical Hacking')
                 elif self.menu[self.focus] == 'Convert':
-                    folders = [f for f in os.scandir(sample_convert.EVTX_LOGS_PATH) if f.is_dir()]
-                    for counter, folder in enumerate(folders, 1):
-
-                        files = [f for f in os.scandir(folder.path)]
-                        for file in files:
-                            try:
-                                for i in range(101):
-                                    sample_convert.xml_converter(file.path)
-                                    progress(i)
-                            except:
-                                print("Unexpected error:", sys.exc_info()[0])
-                                raise
+                    show_convert_page()
+                    self.__init__(title='CI5235 Ethical Hacking')
                 else:
                     self.enterKey = True
         return None
@@ -154,14 +147,33 @@ class ShowInfoPage(CursBaseDialog):
     def show_info_page(self):
         while not self.enterKey:
             self.win.addstr(2, 2, INFO)
-            rectangle(self.win, int(self.maxy/2), int(self.maxx/2-1), 2, 6, curses.A_NORMAL | self.opt_attr)
-            self.win.addstr(int(self.maxy/2+1), int(self.maxx/2), 'Back ', self.focus_attr | self.opt_attr)
+            rectangle(self.win, int(self.maxy / 2), int(self.maxx / 2 - 1), 2, 6, curses.A_NORMAL | self.opt_attr)
+            self.win.addstr(int(self.maxy / 2 + 1), int(self.maxx / 2), 'Back ', self.focus_attr | self.opt_attr)
 
             self.win.refresh()
             key = self.win.getch()
 
             if key == ord('\n'):
                 self.enterKey = True
+
+
+def show_convert_page():
+    maxValue = 100
+    progress = progressBarDialog(maxValue=maxValue,
+                                 message='Your evtx log files is being converted to xml files...\nAnd this is a sample second line\nAnd this is third',
+                                 title='Convert Process Progressing',
+                                 clr1=COLOR_RED, clr2=COLOR_GREEN)
+
+    c = 0
+    e = 0
+    folders = [f for f in os.scandir(sample_convert.EVTX_LOGS_PATH) if f.is_dir()]
+    for counter, folder in enumerate(folders, 1):
+        files = [f for f in os.scandir(folder.path)]
+        for file in files:
+            sample_convert.xml_converter(file.path)
+            progress(e)
+            e = int(c*(100/166))
+            c += 1
 
 
 def showWelcomePage(**options):
@@ -188,15 +200,16 @@ def rectangle(win, begin_y, begin_x, height, width, attr):
     win.refresh()
 
 
-if __name__ == '__main__':
-    from time import sleep
-
-    # test
+def main():
     import traceback
-
     try:
         # init curses screen
         stdscr = curses.initscr()
+
+        global COLOR_RED
+        global COLOR_GREEN
+        global COLOR_BLUE
+        global COLOR_NORMAL
 
         curses.start_color()
         # stdscr.use_default_colors()
@@ -206,21 +219,20 @@ if __name__ == '__main__':
         curses.init_pair(2, curses.COLOR_GREEN, curses.COLOR_GREEN)
         curses.init_pair(3, curses.COLOR_BLUE, 0)
 
+
         COLOR_RED = curses.color_pair(1)
         COLOR_GREEN = curses.color_pair(2)
         COLOR_BLUE = curses.color_pair(3)
         COLOR_NORMAL = curses.color_pair(4)
 
-        showWelcomePage(title='CI5235 Ethical Hacking')
 
-        maxValue = 100
-        progress = progressBarDialog(maxValue=maxValue, message='Progressbar for test', title='Progress test',
-                                     clr1=COLOR_RED, clr2=COLOR_GREEN)
-        for i in range(maxValue + 1):
-            progress(i)
-            sleep(0.1)
+        showWelcomePage(title='CI5235 Ethical Hacking')
 
         curses.endwin()
     except:
         curses.endwin()
         traceback.print_exc()
+
+
+if __name__ == '__main__':
+    main()
