@@ -2,14 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="158e7c9a-bff3-4b65-8ec4-08974fa1bd01" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/dictionaries/talhaeryasar.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/cursDialog.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/CI5235_K1818793_Talha.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/CI5235_K1818793_Talha.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/convert.py" beforeDir="false" afterPath="$PROJECT_DIR$/convert.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/main_app.py" beforeDir="false" afterPath="$PROJECT_DIR$/main_app.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -37,7 +30,7 @@
     <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
-    <property name="settings.editor.selected.configurable" value="preferences.pluginManager" />
+    <property name="settings.editor.selected.configurable" value="reference.settingsdialog.IDE.editor.colors.Color Scheme Font" />
   </component>
   <component name="RunManager" selected="Python.convert">
     <configuration name="convert" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
@@ -119,6 +112,9 @@
       <workItem from="1579508170119" duration="1790000" />
       <workItem from="1579517633657" duration="676000" />
       <workItem from="1579518643024" duration="6273000" />
+      <workItem from="1579531060816" duration="107000" />
+      <workItem from="1579643027506" duration="30000" />
+      <workItem from="1579643079768" duration="117000" />
     </task>
     <servers />
   </component>
@@ -130,6 +126,10 @@
       <screen x="0" y="25" width="2560" height="1415" />
     </state>
     <state x="893" y="524" width="773" height="417" key="#com.intellij.fileTypes.FileTypeChooser/0.25.2560.1415/2560.242.1920.1080@0.25.2560.1415" timestamp="1579509004464" />
+    <state x="408" y="185" key="#com.intellij.openapi.updateSettings.impl.PluginUpdateInfoDialog" timestamp="1579643049638">
+      <screen x="0" y="0" width="1440" height="900" />
+    </state>
+    <state x="408" y="185" key="#com.intellij.openapi.updateSettings.impl.PluginUpdateInfoDialog/0.0.1440.900@0.0.1440.900" timestamp="1579643049638" />
     <state x="951" y="335" width="648" height="795" key="#convert" timestamp="1579484113562">
       <screen x="0" y="25" width="2560" height="1415" />
     </state>
@@ -150,10 +150,14 @@
       <screen x="0" y="25" width="2560" height="1415" />
     </state>
     <state width="2514" height="373" key="GridCell.Tab.0.right/0.25.2560.1415/2560.242.1920.1080@0.25.2560.1415" timestamp="1579484075251" />
-    <state x="221" y="89" key="SettingsEditor" timestamp="1579518620127">
+    <state x="221" y="89" key="SettingsEditor" timestamp="1579531166087">
       <screen x="0" y="0" width="1440" height="900" />
     </state>
-    <state x="221" y="89" key="SettingsEditor/0.0.1440.900@0.0.1440.900" timestamp="1579518620127" />
+    <state x="221" y="89" key="SettingsEditor/0.0.1440.900@0.0.1440.900" timestamp="1579531166087" />
+    <state x="392" y="230" key="git4idea.merge.GitPullDialog" timestamp="1579693598825">
+      <screen x="0" y="0" width="1440" height="900" />
+    </state>
+    <state x="392" y="230" key="git4idea.merge.GitPullDialog/0.0.1440.900@0.0.1440.900" timestamp="1579693598825" />
     <state x="385" y="196" width="670" height="676" key="search.everywhere.popup" timestamp="1579524973065">
       <screen x="0" y="0" width="1440" height="900" />
     </state>
