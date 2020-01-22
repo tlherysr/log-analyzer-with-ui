@@ -115,11 +115,24 @@
       <workItem from="1579531060816" duration="107000" />
       <workItem from="1579643027506" duration="30000" />
       <workItem from="1579643079768" duration="117000" />
+      <workItem from="1579693582224" duration="208000" />
     </task>
+    <task id="LOCAL-00001" summary="useless workspace.xml">
+      <created>1579693625326</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1579693625326</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="1" />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="useless workspace.xml" />
+    <option name="LAST_COMMIT_MESSAGE" value="useless workspace.xml" />
   </component>
   <component name="WindowStateProjectService">
     <state x="893" y="524" width="773" height="417" key="#com.intellij.fileTypes.FileTypeChooser" timestamp="1579509004464">
@@ -134,6 +147,10 @@
       <screen x="0" y="25" width="2560" height="1415" />
     </state>
     <state x="951" y="335" width="648" height="795" key="#convert/0.25.2560.1415/2560.242.1920.1080@0.25.2560.1415" timestamp="1579484113562" />
+    <state x="308" y="0" key="CommitChangelistDialog2" timestamp="1579693624692">
+      <screen x="0" y="0" width="1440" height="900" />
+    </state>
+    <state x="308" y="0" key="CommitChangelistDialog2/0.0.1440.900@0.0.1440.900" timestamp="1579693624692" />
     <state width="2514" height="373" key="GridCell.Tab.0.bottom" timestamp="1579484075251">
       <screen x="0" y="25" width="2560" height="1415" />
     </state>
@@ -154,10 +171,10 @@
       <screen x="0" y="0" width="1440" height="900" />
     </state>
     <state x="221" y="89" key="SettingsEditor/0.0.1440.900@0.0.1440.900" timestamp="1579531166087" />
-    <state x="392" y="230" key="git4idea.merge.GitPullDialog" timestamp="1579693598825">
+    <state x="392" y="230" key="git4idea.merge.GitPullDialog" timestamp="1579693671962">
       <screen x="0" y="0" width="1440" height="900" />
     </state>
-    <state x="392" y="230" key="git4idea.merge.GitPullDialog/0.0.1440.900@0.0.1440.900" timestamp="1579693598825" />
+    <state x="392" y="230" key="git4idea.merge.GitPullDialog/0.0.1440.900@0.0.1440.900" timestamp="1579693671962" />
     <state x="385" y="196" width="670" height="676" key="search.everywhere.popup" timestamp="1579524973065">
       <screen x="0" y="0" width="1440" height="900" />
     </state>
