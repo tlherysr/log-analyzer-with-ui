@@ -6,8 +6,10 @@ import os
 import sys
 from time import sleep
 
-from consoleConvert import (is_logfile_exist, create_logfile_directory, check_xml_files, delete_xml_files,
+from console_logger import LogToFile
+from console_convert import (is_logfile_exist, create_logfile_directory, check_xml_files, delete_xml_files,
                             xml_converter, read_evtx_files ,EVTX_LOGS_PATH)
+from console_analyse import search_xml_files, parse_xml_files
 
 encoding = sys.getdefaultencoding()
 INFO = """ Learning Outcomes:
@@ -39,6 +41,7 @@ class CursBaseDialog:
         self.win.keypad(True)
         self.menu = ['Info', 'Convert', 'Analyse', 'Visualise', 'Exit']
         # self.options = ('Yes   ', 'Cancel')
+        
         # print title
         if self.title:
             self.win.addstr(0, int(self.x / 2 - len(self.title) / 2), self.title, self.title_attr)
@@ -148,6 +151,10 @@ class ShowWelcomePage(CursBaseDialog):
                 elif self.menu[self.focus] == 'Convert':
                     show_convert_page()
                     self.__init__(title='CI5235 Ethical Hacking')
+                elif self.menu[self.focus] == 'Analyse':
+                    
+                    show_analyse_page()
+                    self.__init__(title='CI5235 Ethical Hacking')
                 else:
                     self.enterKey = True
         return None
@@ -223,6 +230,53 @@ class AskDeleteXmlFiles(CursBaseDialog):
         return False
 
 
+class ShowAnalysePage(CursBaseDialog):
+    def __init__(self, **options):
+        # super(self.__class__, self).__init__(**options)
+        super().__init__(**options)
+        self.line_no = 5
+
+    def display_message(self, message):
+        if message:
+            for msg in message.split('\n'):                
+                self.win.addstr(self.line_no, 2, msg, curses.A_BOLD)
+                self.line_no += 1
+        else:
+            pass
+        self.win.refresh()
+    
+    def wait_for_answer(self):
+        while not self.enterKey:
+            self.win.refresh()
+            key = self.win.getch()
+
+            if key == ord('\n'):
+                self.enterKey = True
+
+
+def show_analyse_page():
+    analyse_page = ShowAnalysePage(title='Analysing Process')
+    
+    if check_xml_files():
+        logger_obj = LogToFile(type='Analyse')        
+        analyse_page.display_message(message='[+] SEARCHING FOR XML FILES NOW')
+
+        xml_files = search_xml_files()    
+        progress_bar = ProgressBarDialog(maxValue=len(xml_files),
+                                        title='Analyse Process Progressing',
+                                        clr1=COLOR_RED, clr2=COLOR_GREEN)
+
+        analyse_page.display_message(message='[+] NOW STARTING TO PARSE YOUR XML FILES')
+        
+        parse_xml_files(xml_files, progress_bar, logger_obj)
+        
+        analyse_page.display_message(message='[+] FINISHED NOWW!!!!')
+    else:
+        analyse_page.display_message(message='YOU SHOULD RUN THE CONVERT SCRIPT FIRST!')
+        analyse_page.wait_for_answer()
+        welcome.__init__(title='CI5235 Ethical Hacking')
+
+
 def show_convert_page():
     maxValue = sum([len(files) for r, d, files in os.walk(EVTX_LOGS_PATH)])
     progress_bar = ProgressBarDialog(maxValue=maxValue,
@@ -243,7 +297,9 @@ def show_convert_page():
                                       message='Your evtx log files are being converted to xml files...\n\nConverting...',
                                       title='Convert Process Progressing',
                                       clr1=COLOR_RED, clr2=COLOR_GREEN)
-                read_evtx_files(progress_bar)
+                logger_obj = LogToFile(type='Convert')
+
+                read_evtx_files(progress_bar, logger_obj)
             else:
                 welcome.__init__(title='CI5235 Ethical Hacking')
 
@@ -265,7 +321,8 @@ def show_convert_page():
                                           'sample second line\nAnd this is third',
                                   title='Convert Process Progressing',
                                   clr1=COLOR_RED, clr2=COLOR_GREEN)
-            read_evtx_files(progress_bar)
+            logger_obj = LogToFile(type='Convert')
+            read_evtx_files(progress_bar, logger_obj)
         
         else:
             welcome.__init__(title='CI5235 Ethical Hacking')
@@ -292,6 +349,10 @@ def show_info_page(**options):
     return ShowInfoPage(**options).show_info_page()
 
 
+# def show_analyse_page():
+#     return ShowAnalysePage(**options).show_analyse_page()
+
+
 def rectangle(win, begin_y, begin_x, height, width, attr):
     win.vline(begin_y, begin_x, curses.ACS_VLINE, height, attr)
     win.hline(begin_y, begin_x, curses.ACS_HLINE, width, attr)
@@ -308,7 +369,7 @@ def main():
     import traceback
     try:
         # init curses screen
-        stdscr = curses.initscr()
+        curses.initscr()
 
         global COLOR_RED
         global COLOR_GREEN

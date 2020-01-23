@@ -32,7 +32,7 @@ timestamp = datetime.now().strftime("%d_%b_%Y_%H:%M:%S")
 def searchXMLFiles():
     print("[+] Searching for XML files now.")
     
-    xmlFiles = list()
+    xmlFiles = []
     for root, _, files in os.walk(EVTX_LOGS_DIR):
         for file in files:
             if file.endswith(".xml"):

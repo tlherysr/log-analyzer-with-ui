@@ -9,26 +9,13 @@ all evtx files in the evtx_logs folder from evtx to xml.
 
 """
 
-import logging
 import os
 import sys
 from datetime import datetime
 from time import process_time
 
 from evtx_dump import xml_converter
-
-LOG_DIR = "CI5235_Logs"
-EVTX_LOGS_DIR = "evtx_logs"
-
-# LOGGING
-cwd = os.getcwd()
-LOGFILE_PATH = os.path.join(cwd, LOG_DIR)
-EVTX_LOGS_PATH = os.path.join(cwd, EVTX_LOGS_DIR)
-
-# Create the logger
-logger = logging.getLogger('convert_log')
-logger.setLevel(logging.DEBUG)
-timestamp = datetime.now().strftime("%d_%b_%Y_%H:%M:%S")
+from console_logger import LOGFILE_PATH, EVTX_LOGS_PATH
 
 
 def is_logfile_exist():
@@ -56,13 +43,31 @@ def delete_xml_files(xml_files):
     for xml_file in xml_files:
         os.remove(xml_file)
 
-def read_evtx_files(progress_bar):
-    c = 0
+def read_evtx_files(progress_bar, logger_obj):
+    startTime = process_time()
+    # Count folders and files
+    folder_counter = sum([len(folder) for p, folder, f in os.walk(EVTX_LOGS_PATH)])
+    file_counter = sum([len(files) for r, d, files in os.walk(EVTX_LOGS_PATH)])
+    
+    c = 1
     folders = [f for f in os.scandir(EVTX_LOGS_PATH) if f.is_dir()]
-    for folder in folders:
+    for counter, folder in enumerate(folders, 1):
+        logger_obj.logtofile(message="{}: Working in the {} folder:".format(counter, folder.name))
         files = [f for f in os.scandir(folder.path)]
         for file in files:
+            logger_obj.logtofile(message="Convert {} from evtx to xml format, started...".format(file.name))
             xml_converter(file.path)
+            logger_obj.logtofile(message="Converted successfully!")
+            
             progress_bar.display_message(message=file.name)
             progress_bar.progress(c)
             c += 1
+        logger_obj.logtofile(message='')
+
+    # Print summary
+    logger_obj.logtofile(message="SUMMARY OF CONVERSION PROCESS!")
+    logger_obj.logtofile(message="Folder Count: {}".format(folder_counter))
+    logger_obj.logtofile(message="File Count: {}".format(file_counter))
+    runningTime = process_time() - startTime
+    logger_obj.logtofile(message="The time to complete this conversion was: {}".format(runningTime))
+
