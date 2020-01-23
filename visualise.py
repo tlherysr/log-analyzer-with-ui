@@ -6,12 +6,12 @@ This script is going to open specified log file and create a graph
 according to the data in the log file.
 """
 
-import os
 import logging
+import os
 from datetime import datetime
 
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
 
 ### Logging Directories
 
