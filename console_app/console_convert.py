@@ -34,10 +34,13 @@ def is_logfile_exist():
     #  Logfile Check
     check = os.path.exists(LOGFILE_PATH)
     if check:
-        print("[+] Your log directory: {} exists. So let's keep going.".format(LOG_DIR))
+        return True
     else:
-        print("[+] Your log directory does not exist. So it has been created for you.")
-        os.mkdir(LOGFILE_PATH)
+        return False
+
+
+def create_logfile_directory():
+    os.mkdir(LOGFILE_PATH)
 
 
 def check_xml_files(path=EVTX_LOGS_PATH):
@@ -48,6 +51,7 @@ def check_xml_files(path=EVTX_LOGS_PATH):
             if ".xml" in file:
                 file_path = os.path.join(root, file)
                 xml_files.append(file_path)
+    # return xml_files
 
     if xml_files:
         print("[-] It has been found that .xml files exist in your evtx_logs folders.")
