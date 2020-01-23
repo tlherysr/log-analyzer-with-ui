@@ -39,10 +39,8 @@ def is_logfile_exist():
     else:
         return False
 
-
 def create_logfile_directory():
     os.mkdir(LOGFILE_PATH)
-
 
 def check_xml_files(path=EVTX_LOGS_PATH):
     # Check if any .xml file exists in the directories
@@ -54,75 +52,17 @@ def check_xml_files(path=EVTX_LOGS_PATH):
                 xml_files.append(file_path)
     return xml_files
 
-
 def delete_xml_files(xml_files):
     for xml_file in xml_files:
         os.remove(xml_file)
 
-
-def read_evtx_files():
-    logger.debug("LOG DATE and TIME: {timestamp}".format(timestamp=timestamp))
-    logger.info('')
-    print("[+] Starting to read evtx logs...\n")
-    print("A log file for this xml conversion session will be saved to a folder called 'CI5235_Logs'.")
-    print(timestamp)
-    print("CONVERSION PROCESS STARTED")
-    print()
-
+def read_evtx_files(progress_bar):
+    c = 0
     folders = [f for f in os.scandir(EVTX_LOGS_PATH) if f.is_dir()]
-    for counter, folder in enumerate(folders, 1):
-        logger.info("{}: Working in the {} folder:".format(counter, folder.name))
-
+    for folder in folders:
         files = [f for f in os.scandir(folder.path)]
         for file in files:
-            logger.info(
-                "Convert {} from evtx to xml format, started...".format(file.name))
-            try:
-                xml_converter(file.path)
-                logger.info("Converted successfully!")
-            except:
-                print("Unexpected error:", sys.exc_info()[0])
-                raise
-        logger.info('')
-
-
-def main():
-    startTime = process_time()
-
-    print("[*] First of all let's do some checks.")
-
-    # Check if the required logfile exist. If not, create it.
-    is_logfile_exist()
-
-    # create file handler which logs even debug messages
-    logfile = os.path.join(LOGFILE_PATH, "convert_log_" + timestamp)
-    fh = logging.FileHandler(filename=logfile, mode='w+')
-    fh.setLevel(logging.DEBUG)
-    # create console handler with a higher log level
-    ch = logging.StreamHandler()
-    ch.setLevel(logging.INFO)
-    # add the handlers to logger
-    logger.addHandler(fh)
-    logger.addHandler(ch)
-
-    # Read all evtx files in evtx_logs directory.
-    print("[+] Checking is there any .xml file in your evtx_logs directories and subdirectories...")
-    check_xml_files()
-
-    # Count folders and files
-    folder_counter = sum([len(folder) for p, folder, f in os.walk(EVTX_LOGS_PATH)])
-    file_counter = sum([len(files) for r, d, files in os.walk(EVTX_LOGS_PATH)])
-
-    # Convert EVTX file to xml files
-    read_evtx_files()
-
-    # Print summary
-    logger.info("SUMMARY OF CONVERSION PROCESS!")
-    logger.info("Folder Count: {}".format(folder_counter))
-    logger.info("File Count: {}".format(file_counter))
-    runningTime = process_time() - startTime
-    logger.info("The time to complete this conversion was: {}".format(runningTime))
-
-
-if __name__ == "__main__":
-    main()
+            xml_converter(file.path)
+            progress_bar.display_message(message=file.name)
+            progress_bar.progress(c)
+            c += 1

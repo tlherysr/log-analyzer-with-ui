@@ -7,7 +7,7 @@ import sys
 from time import sleep
 
 from consoleConvert import (is_logfile_exist, create_logfile_directory, check_xml_files, delete_xml_files,
-                            xml_converter, EVTX_LOGS_PATH)
+                            xml_converter, read_evtx_files ,EVTX_LOGS_PATH)
 
 encoding = sys.getdefaultencoding()
 INFO = """ Learning Outcomes:
@@ -74,6 +74,9 @@ class ProgressBarDialog(CursBaseDialog):
         self.blockValue = 0
         self.win.addstr(0, 0, ' ' * self.x, curses.A_STANDOUT)
 
+        # Display Title
+        self.display_title()
+
         # Draw the ProgressBar Box
         self.draw_progress_bar_box()
 
@@ -86,14 +89,16 @@ class ProgressBarDialog(CursBaseDialog):
         y, x = int(self.maxy / 2) - 5, int(self.maxx / 2) - 26
         rect(self.win, y - 1, x - 1, height + y, width + x)
 
-    def display_message(self, message=None):
+    def display_title(self):
         # Print the title if there is any
         if self.title:
             self.win.addstr(0, int(self.x / 2 - len(self.title) / 2), self.title, self.title_attr)
 
+    def display_message(self, message=None):
+        self.win.addstr(10, 2, '\n')
         if message:
-            for (i, msg) in enumerate(message.split('\n')):
-                self.win.addstr(i + 4, 2, msg, curses.A_BOLD)
+            for msg in message.split('\n'):                
+                self.win.addstr(10, 2, msg, curses.A_BOLD)
 
     def progress(self, current_value):
         percentage_complete = int((100 * current_value / self.maxValue))
@@ -152,8 +157,8 @@ class ShowInfoPage(CursBaseDialog):
     def show_info_page(self):
         while not self.enterKey:
             self.win.addstr(2, 2, INFO)
-            rectangle(self.win, int(self.maxy / 2), int(self.maxx / 2 - 1), 2, 7, curses.A_NORMAL | self.opt_attr)
-            self.win.addstr(int(self.maxy / 2 + 1), int(self.maxx / 2), ' Back ', self.focus_attr | self.opt_attr)
+            self.win.addstr(int(self.maxy / 2 + 1), int(self.maxx / 2)-1, ' Back ', self.focus_attr | self.opt_attr)
+            rectangle(self.win, int(self.maxy / 2), int(self.maxx/2)-2, 2, 7, self.focus_attr | self.opt_attr)
 
             self.win.refresh()
             key = self.win.getch()
@@ -179,10 +184,10 @@ class AskLogfileCreate(CursBaseDialog):
 
             for i in range(2):
                 if i != self.focus:
-                    rectangle(self.win, int(self.maxy / 2) - 1, pos_x[i], 2, len(option[i]) + 1,
+                    rectangle(self.win, int(self.maxy / 2)-1, pos_x[i], 2, len(option[i]) + 1,
                               curses.A_NORMAL | self.opt_attr)
                 else:
-                    rectangle(self.win, int(self.maxy / 2) - 1, pos_x[self.focus], 2, len(option[self.focus]) + 1,
+                    rectangle(self.win, int(self.maxy / 2)-1, pos_x[self.focus], 2, len(option[self.focus]) + 1,
                               self.focus_attr | self.opt_attr)
             self.left_right_key_event_handler(2)
         if self.focus == 0:
@@ -220,7 +225,6 @@ class AskDeleteXmlFiles(CursBaseDialog):
 
 def show_convert_page():
     maxValue = sum([len(files) for r, d, files in os.walk(EVTX_LOGS_PATH)])
-
     progress_bar = ProgressBarDialog(maxValue=maxValue,
                                      title='Convert Process Progressing',
                                      clr1=COLOR_RED, clr2=COLOR_GREEN)
@@ -234,17 +238,18 @@ def show_convert_page():
                                     message='[-] It has been found that some .xml files exist in your evtx_logs folders.\n' \
                                             '[?] Would you want me to delete all of them for you now?'):
                 delete_xml_files(xml_files)
+                maxValue = sum([len(files) for r, d, files in os.walk(EVTX_LOGS_PATH)])
                 progress_bar.__init__(maxValue=maxValue,
-                                      message='Your evtx log files is being converted to xml files...\nAnd this is a '
-                                              'sample second line\nAnd this is third',
+                                      message='Your evtx log files are being converted to xml files...\n\nConverting...',
                                       title='Convert Process Progressing',
                                       clr1=COLOR_RED, clr2=COLOR_GREEN)
+                read_evtx_files(progress_bar)
             else:
                 welcome.__init__(title='CI5235 Ethical Hacking')
 
         else:
             progress_bar.__init__(maxValue=maxValue,
-                                  message='Your evtx log files is being converted to xml files...\nAnd this is a '
+                                  message='Your evtx log files are being converted to xml files...\nAnd this is a '
                                           'sample second line\nAnd this is third',
                                   title='Convert Process Progressing',
                                   clr1=COLOR_RED, clr2=COLOR_GREEN)
@@ -260,14 +265,7 @@ def show_convert_page():
                                           'sample second line\nAnd this is third',
                                   title='Convert Process Progressing',
                                   clr1=COLOR_RED, clr2=COLOR_GREEN)
-            c = 0
-            folders = [f for f in os.scandir(EVTX_LOGS_PATH) if f.is_dir()]
-            for counter, folder in enumerate(folders, 1):
-                files = [f for f in os.scandir(folder.path)]
-                for file in files:
-                    xml_converter(file.path)
-                    progress_bar.progress(c)
-                    c += 1
+            read_evtx_files(progress_bar)
         
         else:
             welcome.__init__(title='CI5235 Ethical Hacking')
