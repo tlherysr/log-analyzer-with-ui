@@ -9,11 +9,12 @@ all evtx files in the evtx_logs folder from evtx to xml.
 
 """
 
+import logging
 import os
 import sys
-import logging
-from time import process_time
 from datetime import datetime
+from time import process_time
+
 from evtx_dump import xml_converter
 
 LOG_DIR = "CI5235_Logs"
@@ -51,26 +52,12 @@ def check_xml_files(path=EVTX_LOGS_PATH):
             if ".xml" in file:
                 file_path = os.path.join(root, file)
                 xml_files.append(file_path)
-    # return xml_files
+    return xml_files
 
-    if xml_files:
-        print("[-] It has been found that .xml files exist in your evtx_logs folders.")
-        print("[?] Would you want me to delete all of them for you now?")
-        answer = input("[?] Y for Yes N for NO\n")
-        if answer == "Y" or answer == "y":
-            for xml_file in xml_files:
-                os.remove(xml_file)
-            print("[+] Deleted!")
-        elif answer == "N" or answer == "n":
-            print(
-                "[-] Process can not start if you don't remove .xml files! Do it manually or let the script to do it "
-                "for you!")
-            sys.exit(1)
-        else:
-            print("[-] Please press Y or N!")
-            sys.exit(1)
-    else:
-        pass
+
+def delete_xml_files(xml_files):
+    for xml_file in xml_files:
+        os.remove(xml_file)
 
 
 def read_evtx_files():

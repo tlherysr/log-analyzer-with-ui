@@ -2,10 +2,12 @@
 # --*-- coding: utf-8 --*--
 
 import curses
-import sys
 import os
-from .console_convert import is_logfile_exist, create_logfile_directory, check_xml_files, EVTX_LOGS_PATH, xml_converter
+import sys
+from time import sleep
 
+from consoleConvert import (is_logfile_exist, create_logfile_directory, check_xml_files, delete_xml_files,
+                            xml_converter, EVTX_LOGS_PATH)
 
 encoding = sys.getdefaultencoding()
 INFO = """ Learning Outcomes:
@@ -36,7 +38,17 @@ class CursBaseDialog:
         self.enterKey = False
         self.win.keypad(True)
         self.menu = ['Info', 'Convert', 'Analyse', 'Visualise', 'Exit']
-        self.win.addstr(0, int(self.x / 2 - len(self.title) / 2), self.title, self.title_attr)
+        # self.options = ('Yes   ', 'Cancel')
+        # print title
+        if self.title:
+            self.win.addstr(0, int(self.x / 2 - len(self.title) / 2), self.title, self.title_attr)
+
+        # Print the messages if any
+        if self.message:
+            for (i, msg) in enumerate(self.message.split('\n')):
+                self.win.addstr(i + 4, 2, msg, curses.A_BOLD)
+            # for (i, msg) in enumerate(self.message.split('\n')):
+                # self.win.addstr(int(self.maxy / 2) + i - 10, int(self.maxx / 2) - int(len(msg) / 2), msg, self.msg_attr)
 
         curses.curs_set(0)
         curses.noecho()
@@ -52,22 +64,6 @@ class CursBaseDialog:
         elif key == ord('\n'):
             self.enterKey = True
 
-    def up_down_key_event_handler(self):
-        self.win.refresh()
-        key = self.win.getch()
-
-        if key == curses.KEY_UP and self.focus != 0:
-            self.focus -= 1
-        elif key == curses.KEY_DOWN and self.focus != len(self.menu) - 1:
-            self.focus += 1
-        elif key == ord('\n'):
-            # if user selected "Exit", exit the program
-            if self.menu[self.focus] == "Exit":
-                self.enterKey = True
-            # if user wants intro, give it to him :D
-            elif self.menu[self.focus] == "Info":
-                show_info_page(title='INFO PAGE TITLE')
-
 
 class ProgressBarDialog(CursBaseDialog):
     def __init__(self, **options):
@@ -77,9 +73,6 @@ class ProgressBarDialog(CursBaseDialog):
         self.maxValue = options.get("maxValue")
         self.blockValue = 0
         self.win.addstr(0, 0, ' ' * self.x, curses.A_STANDOUT)
-
-        # Display message
-        self.display_message()
 
         # Draw the ProgressBar Box
         self.draw_progress_bar_box()
@@ -101,10 +94,6 @@ class ProgressBarDialog(CursBaseDialog):
         if message:
             for (i, msg) in enumerate(message.split('\n')):
                 self.win.addstr(i + 4, 2, msg, curses.A_BOLD)
-
-        # Display the message if any
-        for (i, msg) in enumerate(self.message.split('\n')):
-            self.win.addstr(i + 1, 2, msg, curses.A_BOLD)
 
     def progress(self, current_value):
         percentage_complete = int((100 * current_value / self.maxValue))
@@ -175,29 +164,53 @@ class ShowInfoPage(CursBaseDialog):
 
 class AskLogfileCreate(CursBaseDialog):
     def ask_logfile_create(self):
-        self.message = '[-] I can not find the necessary log directory. Would you want me to create it for you?'
-
-        for (i, msg) in enumerate(self.message.split('\n')):
-            self.win.addstr(int(self.maxy/2)+i-10, int(self.maxx/2)-int(len(msg)/2), msg,  self.msg_attr)
-
-        options = ('Yes   ', 'Cancel')
-        rectangle(self.win, int(self.maxy/2)-1, int(self.maxx/2)-13, 2, len(options[0])+1, self.opt_attr)
-        rectangle(self.win, int(self.maxy/2)-1, int(self.maxx/2)+2, 2, len(options[1])+1, self.opt_attr)
-        pos_x = [int(self.maxx/2)-13, int(self.maxx/2)+2]
+        option = ('Yes   ', 'Cancel')
+        rectangle(self.win, int(self.maxy / 2) - 1, int(self.maxx / 2) - 13, 2, len(option[0]) + 1, self.opt_attr)
+        rectangle(self.win, int(self.maxy / 2) - 1, int(self.maxx / 2) + 2, 2, len(option[1]) + 1, self.opt_attr)
+        pos_x = [int(self.maxx / 2) - 13, int(self.maxx / 2) + 2]
 
         while not self.enterKey:
             if self.focus == 0:
-                self.win.addstr(int(self.maxy/2), int(self.maxx/2)-12, ' Yes  ', self.focus_attr | self.opt_attr)
-                self.win.addstr(int(self.maxy/2), int(self.maxx/2)+3, 'Cancel', self.opt_attr)
+                self.win.addstr(int(self.maxy / 2), int(self.maxx / 2) - 12, ' Yes  ', self.focus_attr | self.opt_attr)
+                self.win.addstr(int(self.maxy / 2), int(self.maxx / 2) + 3, 'Cancel', self.opt_attr)
             else:
-                self.win.addstr(int(self.maxy/2), int(self.maxx/2)-12, ' Yes  ', self.opt_attr)
-                self.win.addstr(int(self.maxy/2), int(self.maxx/2)+3, 'Cancel', self.focus_attr | self.opt_attr)
+                self.win.addstr(int(self.maxy / 2), int(self.maxx / 2) - 12, ' Yes  ', self.opt_attr)
+                self.win.addstr(int(self.maxy / 2), int(self.maxx / 2) + 3, 'Cancel', self.focus_attr | self.opt_attr)
 
             for i in range(2):
                 if i != self.focus:
-                    rectangle(self.win, int(self.maxy/2)-1, pos_x[i], 2, len(options[i]) + 1, curses.A_NORMAL | self.opt_attr)
+                    rectangle(self.win, int(self.maxy / 2) - 1, pos_x[i], 2, len(option[i]) + 1,
+                              curses.A_NORMAL | self.opt_attr)
                 else:
-                    rectangle(self.win, int(self.maxy/2)-1, pos_x[self.focus], 2, len(options[self.focus]) + 1,
+                    rectangle(self.win, int(self.maxy / 2) - 1, pos_x[self.focus], 2, len(option[self.focus]) + 1,
+                              self.focus_attr | self.opt_attr)
+            self.left_right_key_event_handler(2)
+        if self.focus == 0:
+            return True
+        return False
+
+
+class AskDeleteXmlFiles(CursBaseDialog):
+    def ask_delete_xml_files(self):
+        option = ('Yes   ', 'Cancel')
+        rectangle(self.win, int(self.maxy / 2) - 1, int(self.maxx / 2) - 13, 2, len(option[0]) + 1, self.opt_attr)
+        rectangle(self.win, int(self.maxy / 2) - 1, int(self.maxx / 2) + 2, 2, len(option[1]) + 1, self.opt_attr)
+        pos_x = [int(self.maxx / 2) - 13, int(self.maxx / 2) + 2]
+
+        while not self.enterKey:
+            if self.focus == 0:
+                self.win.addstr(int(self.maxy / 2), int(self.maxx / 2) - 12, ' Yes  ', self.focus_attr | self.opt_attr)
+                self.win.addstr(int(self.maxy / 2), int(self.maxx / 2) + 3, 'Cancel', self.opt_attr)
+            else:
+                self.win.addstr(int(self.maxy / 2), int(self.maxx / 2) - 12, ' Yes  ', self.opt_attr)
+                self.win.addstr(int(self.maxy / 2), int(self.maxx / 2) + 3, 'Cancel', self.focus_attr | self.opt_attr)
+
+            for i in range(2):
+                if i != self.focus:
+                    rectangle(self.win, int(self.maxy / 2) - 1, pos_x[i], 2, len(option[i]) + 1,
+                              curses.A_NORMAL | self.opt_attr)
+                else:
+                    rectangle(self.win, int(self.maxy / 2) - 1, pos_x[self.focus], 2, len(option[self.focus]) + 1,
                               self.focus_attr | self.opt_attr)
             self.left_right_key_event_handler(2)
         if self.focus == 0:
@@ -209,40 +222,56 @@ def show_convert_page():
     maxValue = sum([len(files) for r, d, files in os.walk(EVTX_LOGS_PATH)])
 
     progress_bar = ProgressBarDialog(maxValue=maxValue,
-                                     message='Your evtx log files is being converted to xml files...\nAnd this is a '
-                                             'sample second line\nAnd this is third',
                                      title='Convert Process Progressing',
                                      clr1=COLOR_RED, clr2=COLOR_GREEN)
 
     # Check if logfile exists.
     if is_logfile_exist():
-        progress_bar.display_message(message='[+] You have the necessary logfile directory. Keep going...')
-        # TODO: Check if there is any xml files in the log directories
+        # Check if there is any xml files in the log directories
         xml_files = check_xml_files()
-        if xml_files:
-            pass # TODO: New Xml file delete ask class will be thrown here
+        if xml_files: 
+            if ask_delete_xml_files(title='XML Files Delete', 
+                                    message='[-] It has been found that some .xml files exist in your evtx_logs folders.\n' \
+                                            '[?] Would you want me to delete all of them for you now?'):
+                delete_xml_files(xml_files)
+                progress_bar.__init__(maxValue=maxValue,
+                                      message='Your evtx log files is being converted to xml files...\nAnd this is a '
+                                              'sample second line\nAnd this is third',
+                                      title='Convert Process Progressing',
+                                      clr1=COLOR_RED, clr2=COLOR_GREEN)
+            else:
+                welcome.__init__(title='CI5235 Ethical Hacking')
+
+        else:
+            progress_bar.__init__(maxValue=maxValue,
+                                  message='Your evtx log files is being converted to xml files...\nAnd this is a '
+                                          'sample second line\nAnd this is third',
+                                  title='Convert Process Progressing',
+                                  clr1=COLOR_RED, clr2=COLOR_GREEN)
 
     else:
         # Ask user if she/he wants to create the log directory
-        if ask_logfile_create(title='Convert Page Processing'):
+        if ask_logfile_create(title='Convert Page Processing',
+                              message='[-] I can not find the necessary logfile directory.\n'
+                                      '[?] Would you want me to create it for you?'):
             create_logfile_directory()
             progress_bar.__init__(maxValue=maxValue,
                                   message='Your evtx log files is being converted to xml files...\nAnd this is a '
                                           'sample second line\nAnd this is third',
                                   title='Convert Process Progressing',
                                   clr1=COLOR_RED, clr2=COLOR_GREEN)
+            c = 0
+            folders = [f for f in os.scandir(EVTX_LOGS_PATH) if f.is_dir()]
+            for counter, folder in enumerate(folders, 1):
+                files = [f for f in os.scandir(folder.path)]
+                for file in files:
+                    xml_converter(file.path)
+                    progress_bar.progress(c)
+                    c += 1
+        
         else:
             welcome.__init__(title='CI5235 Ethical Hacking')
             welcome.show_welcome_page()
-
-    c = 0
-    folders = [f for f in os.scandir(sample_convert.EVTX_LOGS_PATH) if f.is_dir()]
-    for counter, folder in enumerate(folders, 1):
-        files = [f for f in os.scandir(folder.path)]
-        for file in files:
-            xml_converter(file.path)
-            progress_bar.progress(c)
-            c += 1
 
 
 def show_welcome_page(**options):
@@ -251,6 +280,10 @@ def show_welcome_page(**options):
 
 def ask_logfile_create(**options):
     return AskLogfileCreate(**options).ask_logfile_create()
+
+
+def ask_delete_xml_files(**options):
+    return AskDeleteXmlFiles(**options).ask_delete_xml_files()
 
 
 def progress_bar_dialog(**options):

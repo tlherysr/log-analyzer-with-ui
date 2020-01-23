@@ -9,11 +9,10 @@ with the given list.
 
 """
 
-import os
-import sys
 import logging
-from datetime import datetime
+import os
 import xml.dom.minidom as xml
+from datetime import datetime
 
 LOG_DIR = "CI5235_Logs"
 EVTX_LOGS_DIR = "evtx_logs"

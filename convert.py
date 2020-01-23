@@ -9,11 +9,12 @@ all evtx files in the evtx_logs folder from evtx to xml.
 
 """
 
+import logging
 import os
 import sys
-import logging
-from time import process_time
 from datetime import datetime
+from time import process_time
+
 from evtx_dump import xml_converter
 
 LOG_DIR = "CI5235_Logs"
