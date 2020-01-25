@@ -10,6 +10,7 @@ from console_logger import LogToFile
 from console_convert import (is_logfile_exist, create_logfile_directory, check_xml_files, delete_xml_files,
                             xml_converter, read_evtx_files ,EVTX_LOGS_PATH)
 from console_analyse import search_xml_files, parse_xml_files
+from console_visualise import find_log_files, count_EventID, get_eventID_list, draw_graphs
 
 encoding = sys.getdefaultencoding()
 INFO = """ Learning Outcomes:
@@ -21,7 +22,7 @@ INFO = """ Learning Outcomes:
 """
 
 
-class CursBaseDialog:
+class MainPage:
     def __init__(self, **options):
         self.maxy, self.maxx = curses.LINES, curses.COLS
         # self.win = curses.newwin(24, 80, int((self.maxy / 2 - 12)), int((self.maxx / 2) - 40))
@@ -42,6 +43,7 @@ class CursBaseDialog:
         self.win.keypad(True)
         self.menu = ['Info', 'Convert', 'Analyse', 'Visualise', 'Exit']
         self.option = ('Yes   ', 'Cancel')
+        self.current_line = ""
         
         # print title
         if self.title:
@@ -68,11 +70,12 @@ class CursBaseDialog:
             self.focus[1] -= 1
         elif key == curses.KEY_DOWN and self.focus[1] != max - 1:
             self.focus[1] += 1
+            self.current_line = self.option[self.focus[1]]
         elif key == ord('\n'):
             self.enterKey = True
 
 
-class ProgressBarDialog(CursBaseDialog):
+class CustomPage(MainPage):
     def __init__(self, **options):
         super(self.__class__, self).__init__(**options)
         self.clr1 = options.get("clr1", curses.A_NORMAL)
@@ -84,9 +87,6 @@ class ProgressBarDialog(CursBaseDialog):
 
         # Display Title
         self.display_title()
-
-        # # Draw the ProgressBar Box
-        # self.draw_progress_bar_box()
 
         self.win.refresh()
 
@@ -135,7 +135,7 @@ class ProgressBarDialog(CursBaseDialog):
         self.win.refresh()
 
 
-class ShowWelcomePage(CursBaseDialog):
+class ShowWelcomePage(MainPage):
     def show_welcome_page(self):
         while not self.enterKey:
             for idx, row in enumerate(self.menu):
@@ -157,7 +157,7 @@ class ShowWelcomePage(CursBaseDialog):
         elif key == ord('\n'):
             # if user selected "Exit", exit the program
             if self.menu[self.focus[1]] == 'Exit':
-                sys.exit(0)
+                self.enterKey = True
             # if user wants intro, give it to him :D
             elif self.menu[self.focus[1]] == 'Info':
                 show_info_page(title='Info Page')
@@ -169,12 +169,13 @@ class ShowWelcomePage(CursBaseDialog):
                 show_analyse_page()
                 self.__init__(title='CI5235 Ethical Hacking')
             elif self.menu[self.focus[1]] == 'Visualise':
-                self.enterKey = True
+                show_visualise_page()
+                self.__init__(title='CI5235 Ethical Hacking')
             else:
-                sys.exit(1)
+                self.enterKey = True
 
 
-class ShowInfoPage(CursBaseDialog):
+class ShowInfoPage(MainPage):
     def show_info_page(self):
         while not self.enterKey:
             self.win.addstr(2, 2, INFO)
@@ -188,7 +189,7 @@ class ShowInfoPage(CursBaseDialog):
                 self.enterKey = True
 
 
-class AskLogfileCreate(CursBaseDialog):
+class AskLogfileCreate(MainPage):
     def ask_logfile_create(self):
         # self.option = ('Yes   ', 'Cancel')
         rectangle(self.win, int(self.maxy / 2) - 1, int(self.maxx / 2) - 13, 2, len(self.option[0]) + 1, self.opt_attr)
@@ -216,7 +217,7 @@ class AskLogfileCreate(CursBaseDialog):
         return False
 
 
-class AskDeleteXmlFiles(CursBaseDialog):
+class AskDeleteXmlFiles(MainPage):
     def ask_delete_xml_files(self):
         # option = ('Yes   ', 'Cancel')
         rectangle(self.win, int(self.maxy / 2) - 1, int(self.maxx / 2) - 13, 2, len(self.option[0]) + 1, self.opt_attr)
@@ -244,32 +245,73 @@ class AskDeleteXmlFiles(CursBaseDialog):
         return False
 
 
+def show_visualise_page():
+    analyse_logfiles = find_log_files()
+    if analyse_logfiles:
+        logger_obj = LogToFile(type='Visualise')
+        visualise_page = CustomPage(maxValue=100,
+                                           title='Visualisation Process Progressing',
+                                           clr1=COLOR_RED, clr2=COLOR_GREEN)
+        visualise_page.option = analyse_logfiles
+        visualise_page.display_message_newline(message='[?] Which logfile do you want to analyse and draw the graph?')
+        
+        while not visualise_page.enterKey:
+            for idx, row in enumerate(analyse_logfiles):
+                if idx == visualise_page.focus[1]:
+                    visualise_page.win.addstr(5+idx, 2, row, visualise_page.opt_attr | visualise_page.focus_attr)
+                    visualise_page.line_no += 1
+                else:
+                    visualise_page.win.addstr(5+idx, 2, row, visualise_page.opt_attr)
+                    visualise_page.line_no += 1
+            visualise_page.key_event_handler()
+        visualise_logfile_name = visualise_page.option[visualise_page.focus[1]]
+        eventID_Dict = count_EventID(visualise_logfile_name)
+        
+        ### Log to Visualise log file
+        for eventID in eventID_Dict:
+            logger_obj.logtofile(message="Event ID: {event_id}".format(event_id=eventID))
+            logger_obj.logtofile("Event Count: {count}".format(count=eventID_Dict.get(eventID).get("Count")))
+            logger_obj.logtofile("")
+
+        eventID_list, eventID_count_list = get_eventID_list(logger_obj.logfile)
+        visualise_page.__init__(title='sample')
+        draw_graphs(eventID_list, eventID_count_list, logger_obj.logfile)
+        visualise_page.win.getch()
+    
+    else:
+        visualise_page = CustomPage(maxValue=100,    
+                                           title='Visualisation Process Progressing',
+                                           clr1=COLOR_RED, clr2=COLOR_GREEN)
+        visualise_page.display_message_newline(message='There is no analyse log file yet. Please run "Analyse"  first.')
+        visualise_page.win.getch()
+
+
 def show_analyse_page():
     if check_xml_files():
         logger_obj = LogToFile(type='Analyse')        
         xml_files = search_xml_files()    
-        analyse_page = ProgressBarDialog(maxValue=len(xml_files),
+        analyse_page = CustomPage(maxValue=len(xml_files),
                                          title='Analyse Process Progressing',
                                          clr1=COLOR_RED, clr2=COLOR_GREEN
                                         )
         
         analyse_page.display_message_newline(message='[+] SEARCHING FOR XML FILES NOW')
-        sleep(1)
+        sleep(0.2)
         analyse_page.display_message_newline(message='[+] SEARCHING FOR XML FILES NOW.')
-        sleep(1)
+        sleep(0.2)
         analyse_page.display_message_newline(message='[+] SEARCHING FOR XML FILES NOW..')
-        sleep(1)
+        sleep(0.2)
         analyse_page.display_message_newline(message='[+] SEARCHING FOR XML FILES NOW...')
-        sleep(1)
+        sleep(0.2)
         analyse_page.display_message_newline(message='[+] NOW STARTING TO PARSE YOUR XML FILES')
-        sleep(1)
+        sleep(0.2)
         analyse_page.draw_progress_bar_box()
         
         parse_xml_files(xml_files, analyse_page, logger_obj)
         
         analyse_page.display_message_newline(message='[+] FINISHED NOWW!!!!')
     else:
-        analyse_page = ProgressBarDialog(title='Analyse Process Progressing',
+        analyse_page = CustomPage(title='Analyse Process Progressing',
                                          message='\nYOU SHOULD RUN THE CONVERT SCRIPT FIRST!'
                                         )
         analyse_page.win.getch()
@@ -278,7 +320,7 @@ def show_analyse_page():
 
 def show_convert_page():
     maxValue = sum([len(files) for r, d, files in os.walk(EVTX_LOGS_PATH)])
-    convert_progress_bar = ProgressBarDialog(maxValue=maxValue,
+    convert_progress_bar = CustomPage(maxValue=maxValue,
                                              title='Convert Process Progressing',
                                              clr1=COLOR_RED, clr2=COLOR_GREEN
                                             )
@@ -332,10 +374,6 @@ def show_convert_page():
             welcome.__init__(title='CI5235 Ethical Hacking')
 
 
-def show_welcome_page(**options):
-    return ShowWelcomePage(**options).show_welcome_page()
-
-
 def ask_logfile_create(**options):
     return AskLogfileCreate(**options).ask_logfile_create()
 
@@ -345,7 +383,7 @@ def ask_delete_xml_files(**options):
 
 
 def progress_bar_dialog(**options):
-    return ProgressBarDialog(**options).progress
+    return CustomPage(**options).progress
 
 
 def show_info_page(**options):
@@ -389,8 +427,8 @@ def main():
         COLOR_BLUE = curses.color_pair(3)
         COLOR_NORMAL = curses.color_pair(4)
 
-        welcome = ShowWelcomePage(title='CI5235 Ethical Hacking')
-        welcome.show_welcome_page()
+        welcome_page = ShowWelcomePage(title='CI5235 Ethical Hacking')
+        welcome_page.show_welcome_page()
 
         curses.endwin()
     except:
