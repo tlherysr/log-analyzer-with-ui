@@ -49,9 +49,7 @@ class CursBaseDialog:
         # Print the messages if any
         if self.message:
             for (i, msg) in enumerate(self.message.split('\n')):
-                self.win.addstr(i + 4, 2, msg, curses.A_BOLD)
-            # for (i, msg) in enumerate(self.message.split('\n')):
-                # self.win.addstr(int(self.maxy / 2) + i - 10, int(self.maxx / 2) - int(len(msg) / 2), msg, self.msg_attr)
+                self.win.addstr(i + 1, 2, msg, curses.A_BOLD)
 
         curses.curs_set(0)
         curses.noecho()
@@ -76,12 +74,13 @@ class ProgressBarDialog(CursBaseDialog):
         self.maxValue = options.get("maxValue")
         self.blockValue = 0
         self.win.addstr(0, 0, ' ' * self.x, curses.A_STANDOUT)
+        self.line_no = 2
 
         # Display Title
         self.display_title()
 
-        # Draw the ProgressBar Box
-        self.draw_progress_bar_box()
+        # # Draw the ProgressBar Box
+        # self.draw_progress_bar_box()
 
         self.win.refresh()
 
@@ -98,10 +97,17 @@ class ProgressBarDialog(CursBaseDialog):
             self.win.addstr(0, int(self.x / 2 - len(self.title) / 2), self.title, self.title_attr)
 
     def display_message(self, message=None):
-        self.win.addstr(10, 2, '\n')
+        self.win.addstr(4, 2, '\n')
         if message:
             for msg in message.split('\n'):                
-                self.win.addstr(10, 2, msg, curses.A_BOLD)
+                self.win.addstr(4, 2, msg, curses.A_BOLD)
+
+    def display_message_newline(self, message=None):
+        if message:
+            for msg in message.split('\n'):                
+                self.win.addstr(self.line_no, 2, msg, curses.A_BOLD)
+                self.line_no += 1
+            self.win.refresh()
 
     def progress(self, current_value):
         percentage_complete = int((100 * current_value / self.maxValue))
@@ -152,12 +158,12 @@ class ShowWelcomePage(CursBaseDialog):
                     show_convert_page()
                     self.__init__(title='CI5235 Ethical Hacking')
                 elif self.menu[self.focus] == 'Analyse':
-                    
                     show_analyse_page()
                     self.__init__(title='CI5235 Ethical Hacking')
-                else:
+                elif self.menu[self.focus] == 'Visualise':
                     self.enterKey = True
-        return None
+                else:
+                    sys.exit(1)
 
 
 class ShowInfoPage(CursBaseDialog):
@@ -230,58 +236,44 @@ class AskDeleteXmlFiles(CursBaseDialog):
         return False
 
 
-class ShowAnalysePage(CursBaseDialog):
-    def __init__(self, **options):
-        # super(self.__class__, self).__init__(**options)
-        super().__init__(**options)
-        self.line_no = 5
-
-    def display_message(self, message):
-        if message:
-            for msg in message.split('\n'):                
-                self.win.addstr(self.line_no, 2, msg, curses.A_BOLD)
-                self.line_no += 1
-        else:
-            pass
-        self.win.refresh()
-    
-    def wait_for_answer(self):
-        while not self.enterKey:
-            self.win.refresh()
-            key = self.win.getch()
-
-            if key == ord('\n'):
-                self.enterKey = True
-
-
 def show_analyse_page():
-    analyse_page = ShowAnalysePage(title='Analysing Process')
-    
     if check_xml_files():
         logger_obj = LogToFile(type='Analyse')        
-        analyse_page.display_message(message='[+] SEARCHING FOR XML FILES NOW')
-
         xml_files = search_xml_files()    
-        progress_bar = ProgressBarDialog(maxValue=len(xml_files),
-                                        title='Analyse Process Progressing',
-                                        clr1=COLOR_RED, clr2=COLOR_GREEN)
-
-        analyse_page.display_message(message='[+] NOW STARTING TO PARSE YOUR XML FILES')
+        analyse_page = ProgressBarDialog(maxValue=len(xml_files),
+                                         title='Analyse Process Progressing',
+                                         clr1=COLOR_RED, clr2=COLOR_GREEN
+                                        )
         
-        parse_xml_files(xml_files, progress_bar, logger_obj)
+        analyse_page.display_message_newline(message='[+] SEARCHING FOR XML FILES NOW')
+        sleep(1)
+        analyse_page.display_message_newline(message='[+] SEARCHING FOR XML FILES NOW.')
+        sleep(1)
+        analyse_page.display_message_newline(message='[+] SEARCHING FOR XML FILES NOW..')
+        sleep(1)
+        analyse_page.display_message_newline(message='[+] SEARCHING FOR XML FILES NOW...')
+        sleep(1)
+        analyse_page.display_message_newline(message='[+] NOW STARTING TO PARSE YOUR XML FILES')
+        sleep(1)
+        analyse_page.draw_progress_bar_box()
         
-        analyse_page.display_message(message='[+] FINISHED NOWW!!!!')
+        parse_xml_files(xml_files, analyse_page, logger_obj)
+        
+        analyse_page.display_message_newline(message='[+] FINISHED NOWW!!!!')
     else:
-        analyse_page.display_message(message='YOU SHOULD RUN THE CONVERT SCRIPT FIRST!')
-        analyse_page.wait_for_answer()
+        analyse_page = ProgressBarDialog(title='Analyse Process Progressing',
+                                         message='\nYOU SHOULD RUN THE CONVERT SCRIPT FIRST!'
+                                        )
+        analyse_page.win.getch()
         welcome.__init__(title='CI5235 Ethical Hacking')
 
 
 def show_convert_page():
     maxValue = sum([len(files) for r, d, files in os.walk(EVTX_LOGS_PATH)])
-    progress_bar = ProgressBarDialog(maxValue=maxValue,
-                                     title='Convert Process Progressing',
-                                     clr1=COLOR_RED, clr2=COLOR_GREEN)
+    convert_progress_bar = ProgressBarDialog(maxValue=maxValue,
+                                             title='Convert Process Progressing',
+                                             clr1=COLOR_RED, clr2=COLOR_GREEN
+                                            )
 
     # Check if logfile exists.
     if is_logfile_exist():
@@ -293,40 +285,43 @@ def show_convert_page():
                                             '[?] Would you want me to delete all of them for you now?'):
                 delete_xml_files(xml_files)
                 maxValue = sum([len(files) for r, d, files in os.walk(EVTX_LOGS_PATH)])
-                progress_bar.__init__(maxValue=maxValue,
-                                      message='Your evtx log files are being converted to xml files...\n\nConverting...',
-                                      title='Convert Process Progressing',
-                                      clr1=COLOR_RED, clr2=COLOR_GREEN)
+                convert_progress_bar.__init__(maxValue=maxValue,
+                                              message='Your evtx log files are being converted to xml files...\nConverting...',
+                                              title='Convert Process Progressing',
+                                              clr1=COLOR_RED, clr2=COLOR_GREEN
+                                             )
+                convert_progress_bar.draw_progress_bar_box()
                 logger_obj = LogToFile(type='Convert')
 
-                read_evtx_files(progress_bar, logger_obj)
+                read_evtx_files(convert_progress_bar, logger_obj)
             else:
                 welcome.__init__(title='CI5235 Ethical Hacking')
 
         else:
-            progress_bar.__init__(maxValue=maxValue,
-                                  message='Your evtx log files are being converted to xml files...\nAnd this is a '
-                                          'sample second line\nAnd this is third',
-                                  title='Convert Process Progressing',
-                                  clr1=COLOR_RED, clr2=COLOR_GREEN)
-
+            convert_progress_bar.__init__(maxValue=maxValue,
+                                          message='Your evtx log files are being converted to xml files...\nConverting',
+                                          title='Convert Process Progressing',
+                                          clr1=COLOR_RED, clr2=COLOR_GREEN
+                                         )
+            convert_progress_bar.draw_progress_bar_box()
+            logger_obj = LogToFile(type='Convert')
+            read_evtx_files(convert_progress_bar, logger_obj)
     else:
         # Ask user if she/he wants to create the log directory
         if ask_logfile_create(title='Convert Page Processing',
                               message='[-] I can not find the necessary logfile directory.\n'
                                       '[?] Would you want me to create it for you?'):
             create_logfile_directory()
-            progress_bar.__init__(maxValue=maxValue,
-                                  message='Your evtx log files is being converted to xml files...\nAnd this is a '
-                                          'sample second line\nAnd this is third',
-                                  title='Convert Process Progressing',
-                                  clr1=COLOR_RED, clr2=COLOR_GREEN)
+            convert_progress_bar.__init__(maxValue=maxValue,
+                                          message='Your evtx log files are being converted to xml files...\nConverting',
+                                          title='Convert Process Progressing',
+                                          clr1=COLOR_RED, clr2=COLOR_GREEN
+                                         )
+            convert_progress_bar.draw_progress_bar_box()
             logger_obj = LogToFile(type='Convert')
-            read_evtx_files(progress_bar, logger_obj)
-        
+            read_evtx_files(convert_progress_bar, logger_obj)
         else:
             welcome.__init__(title='CI5235 Ethical Hacking')
-            welcome.show_welcome_page()
 
 
 def show_welcome_page(**options):
@@ -347,10 +342,6 @@ def progress_bar_dialog(**options):
 
 def show_info_page(**options):
     return ShowInfoPage(**options).show_info_page()
-
-
-# def show_analyse_page():
-#     return ShowAnalysePage(**options).show_analyse_page()
 
 
 def rectangle(win, begin_y, begin_x, height, width, attr):
