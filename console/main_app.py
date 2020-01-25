@@ -232,7 +232,6 @@ class AskDeleteXmlFiles(CursBaseDialog):
 
 class ShowAnalysePage(CursBaseDialog):
     def __init__(self, **options):
-        # super(self.__class__, self).__init__(**options)
         super().__init__(**options)
         self.line_no = 5
 
@@ -305,8 +304,7 @@ def show_convert_page():
 
         else:
             progress_bar.__init__(maxValue=maxValue,
-                                  message='Your evtx log files are being converted to xml files...\nAnd this is a '
-                                          'sample second line\nAnd this is third',
+                                  message='Your evtx log files are being converted to xml files...\n\nConverting...',
                                   title='Convert Process Progressing',
                                   clr1=COLOR_RED, clr2=COLOR_GREEN)
 
@@ -317,8 +315,7 @@ def show_convert_page():
                                       '[?] Would you want me to create it for you?'):
             create_logfile_directory()
             progress_bar.__init__(maxValue=maxValue,
-                                  message='Your evtx log files is being converted to xml files...\nAnd this is a '
-                                          'sample second line\nAnd this is third',
+                                  message='Your evtx log files are being converted to xml files...\n\nConverting...',
                                   title='Convert Process Progressing',
                                   clr1=COLOR_RED, clr2=COLOR_GREEN)
             logger_obj = LogToFile(type='Convert')
