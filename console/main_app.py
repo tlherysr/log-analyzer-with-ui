@@ -315,7 +315,7 @@ def show_analyse_page():
                                          message='\nYOU SHOULD RUN THE CONVERT SCRIPT FIRST!'
                                         )
         analyse_page.win.getch()
-        welcome.__init__(title='CI5235 Ethical Hacking')
+        welcome_page.__init__(title='CI5235 Ethical Hacking')
 
 
 def show_convert_page():
@@ -345,7 +345,7 @@ def show_convert_page():
 
                 read_evtx_files(convert_progress_bar, logger_obj)
             else:
-                welcome.__init__(title='CI5235 Ethical Hacking')
+                welcome_page.__init__(title='CI5235 Ethical Hacking')
 
         else:
             convert_progress_bar.__init__(maxValue=maxValue,
@@ -371,7 +371,7 @@ def show_convert_page():
             logger_obj = LogToFile(type='Convert')
             read_evtx_files(convert_progress_bar, logger_obj)
         else:
-            welcome.__init__(title='CI5235 Ethical Hacking')
+            welcome_page.__init__(title='CI5235 Ethical Hacking')
 
 
 def ask_logfile_create(**options):
@@ -412,7 +412,7 @@ def main():
         global COLOR_GREEN
         global COLOR_BLUE
         global COLOR_NORMAL
-        global welcome
+        global welcome_page
 
         curses.start_color()
         # stdscr.use_default_colors()
