@@ -27,7 +27,7 @@ def search_xml_files():
 
     return xml_files
 
-def parse_xml_files(xml_files, progress_bar, logger_obj):
+def parse_xml_files(xml_files, analyse_page, logger_obj):
     eventIDCounter = 0
     matchedEventIDCounter = 0
     c = 1
@@ -49,7 +49,7 @@ def parse_xml_files(xml_files, progress_bar, logger_obj):
                 date_time = datetime.now().strftime("%Y-%b-%d %H:%M:%S.%f")
                 logger_obj.logtofile(message="Date and Time: {date}".format(date=date_time))
                 logger_obj.logtofile(message="")
-        progress_bar.progress(c)
+        analyse_page.progress(c)
         c += 1
         
         logger_obj.logtofile(message="")
