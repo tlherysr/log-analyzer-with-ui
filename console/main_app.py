@@ -189,9 +189,8 @@ class ShowInfoPage(MainPage):
                 self.enterKey = True
 
 
-class AskLogfileCreate(MainPage):
-    def ask_logfile_create(self):
-        # self.option = ('Yes   ', 'Cancel')
+class ShowQuestionPage(MainPage):
+    def show_question_page(self):
         rectangle(self.win, int(self.maxy / 2) - 1, int(self.maxx / 2) - 13, 2, len(self.option[0]) + 1, self.opt_attr)
         rectangle(self.win, int(self.maxy / 2) - 1, int(self.maxx / 2) + 2, 2, len(self.option[1]) + 1, self.opt_attr)
         pos_x = [int(self.maxx / 2) - 13, int(self.maxx / 2) + 2]
@@ -213,34 +212,6 @@ class AskLogfileCreate(MainPage):
                               self.focus_attr | self.opt_attr)
             self.key_event_handler()
         if self.focus[0] == 0:
-            return True
-        return False
-
-
-class AskDeleteXmlFiles(MainPage):
-    def ask_delete_xml_files(self):
-        # option = ('Yes   ', 'Cancel')
-        rectangle(self.win, int(self.maxy / 2) - 1, int(self.maxx / 2) - 13, 2, len(self.option[0]) + 1, self.opt_attr)
-        rectangle(self.win, int(self.maxy / 2) - 1, int(self.maxx / 2) + 2, 2, len(self.option[1]) + 1, self.opt_attr)
-        pos_x = [int(self.maxx / 2) - 13, int(self.maxx / 2) + 2]
-
-        while not self.enterKey:
-            if self.focus[0] == 0:
-                self.win.addstr(int(self.maxy / 2), int(self.maxx / 2) - 12, ' Yes  ', self.focus_attr | self.opt_attr)
-                self.win.addstr(int(self.maxy / 2), int(self.maxx / 2) + 3, 'Cancel', self.opt_attr)
-            else:
-                self.win.addstr(int(self.maxy / 2), int(self.maxx / 2) - 12, ' Yes  ', self.opt_attr)
-                self.win.addstr(int(self.maxy / 2), int(self.maxx / 2) + 3, 'Cancel', self.focus_attr | self.opt_attr)
-
-            for i in range(2):
-                if i != self.focus[0]:
-                    rectangle(self.win, int(self.maxy / 2) - 1, pos_x[i], 2, len(self.option[i]) + 1,
-                              curses.A_NORMAL | self.opt_attr)
-                else:
-                    rectangle(self.win, int(self.maxy / 2) - 1, pos_x[self.focus[0]], 2, len(self.option[self.focus[0]]) + 1,
-                              self.focus_attr | self.opt_attr)
-            self.key_event_handler()
-        if self.focus == 0:
             return True
         return False
 
@@ -330,9 +301,9 @@ def show_convert_page():
         # Check if there is any xml files in the log directories
         xml_files = check_xml_files()
         if xml_files: 
-            if ask_delete_xml_files(title='XML Files Delete', 
-                                    message='[-] It has been found that some .xml files exist in your evtx_logs folders.\n' \
-                                            '[?] Would you want me to delete all of them for you now?'):
+            if show_question_page(title='XML Files Delete', 
+                                  message='[-] It has been found that some .xml files exist in your evtx_logs folders.\n' \
+                                          '[?] Would you want me to delete all of them for you now?'):
                 delete_xml_files(xml_files)
                 maxValue = sum([len(files) for r, d, files in os.walk(EVTX_LOGS_PATH)])
                 convert_progress_bar.__init__(maxValue=maxValue,
@@ -358,7 +329,7 @@ def show_convert_page():
             read_evtx_files(convert_progress_bar, logger_obj)
     else:
         # Ask user if she/he wants to create the log directory
-        if ask_logfile_create(title='Convert Page Processing',
+        if show_question_page(title='Convert Page Processing',
                               message='[-] I can not find the necessary logfile directory.\n'
                                       '[?] Would you want me to create it for you?'):
             create_logfile_directory()
@@ -374,12 +345,8 @@ def show_convert_page():
             welcome_page.__init__(title='CI5235 Ethical Hacking')
 
 
-def ask_logfile_create(**options):
-    return AskLogfileCreate(**options).ask_logfile_create()
-
-
-def ask_delete_xml_files(**options):
-    return AskDeleteXmlFiles(**options).ask_delete_xml_files()
+def show_question_page(**options):
+    return ShowQuestionPage(**options).show_question_page()
 
 
 def progress_bar_dialog(**options):
