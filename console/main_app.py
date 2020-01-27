@@ -75,7 +75,7 @@ class MainPage:
             self.enterKey = True
 
 
-class CustomPage(MainPage):
+class ShowProgressBarPage(MainPage):
     def __init__(self, **options):
         super(self.__class__, self).__init__(**options)
         self.clr1 = options.get("clr1", curses.A_NORMAL)
@@ -220,7 +220,7 @@ def show_visualise_page():
     analyse_logfiles = find_log_files()
     if analyse_logfiles:
         logger_obj = LogToFile(type='Visualise')
-        visualise_page = CustomPage(maxValue=100,
+        visualise_page = ShowProgressBarPage(maxValue=100,
                                            title='Visualisation Process Progressing',
                                            clr1=COLOR_RED, clr2=COLOR_GREEN)
         visualise_page.option = analyse_logfiles
@@ -245,12 +245,12 @@ def show_visualise_page():
             logger_obj.logtofile("")
 
         eventID_list, eventID_count_list = get_eventID_list(logger_obj.logfile)
-        visualise_page.__init__(title='sample')
+        visualise_page.__init__(title='Graph', message='[+] Your graph is ready! Here it is!!')
         draw_graphs(eventID_list, eventID_count_list, logger_obj.logfile)
         visualise_page.win.getch()
     
     else:
-        visualise_page = CustomPage(maxValue=100,    
+        visualise_page = ShowProgressBarPage(maxValue=100,    
                                            title='Visualisation Process Progressing',
                                            clr1=COLOR_RED, clr2=COLOR_GREEN)
         visualise_page.display_message_newline(message='There is no analyse log file yet. Please run "Analyse"  first.')
@@ -261,7 +261,7 @@ def show_analyse_page():
     if check_xml_files():
         logger_obj = LogToFile(type='Analyse')        
         xml_files = search_xml_files()    
-        analyse_page = CustomPage(maxValue=len(xml_files),
+        analyse_page = ShowProgressBarPage(maxValue=len(xml_files),
                                          title='Analyse Process Progressing',
                                          clr1=COLOR_RED, clr2=COLOR_GREEN
                                         )
@@ -282,7 +282,7 @@ def show_analyse_page():
         
         analyse_page.display_message_newline(message='[+] FINISHED NOWW!!!!')
     else:
-        analyse_page = CustomPage(title='Analyse Process Progressing',
+        analyse_page = ShowProgressBarPage(title='Analyse Process Progressing',
                                          message='\nYOU SHOULD RUN THE CONVERT SCRIPT FIRST!'
                                         )
         analyse_page.win.getch()
@@ -291,10 +291,10 @@ def show_analyse_page():
 
 def show_convert_page():
     maxValue = sum([len(files) for r, d, files in os.walk(EVTX_LOGS_PATH)])
-    convert_progress_bar = CustomPage(maxValue=maxValue,
-                                             title='Convert Process Progressing',
-                                             clr1=COLOR_RED, clr2=COLOR_GREEN
-                                            )
+    convert_progress_bar = ShowProgressBarPage(maxValue=maxValue,
+                                               title='Convert Process Progressing',
+                                               clr1=COLOR_RED, clr2=COLOR_GREEN
+                                              )
 
     # Check if logfile exists.
     if is_logfile_exist():
@@ -350,7 +350,7 @@ def show_question_page(**options):
 
 
 def progress_bar_dialog(**options):
-    return CustomPage(**options).progress
+    return ShowProgressBarPage(**options).progress
 
 
 def show_info_page(**options):
