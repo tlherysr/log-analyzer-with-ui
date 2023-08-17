@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 # --*-- coding: utf-8 --*--
 
-import curses
 import os
 import sys
+import curses
 from time import sleep
 
 from console_logger import LogToFile
 from console_convert import (is_logfile_exist, create_logfile_directory, check_xml_files, delete_xml_files,
-                            xml_converter, read_evtx_files ,EVTX_LOGS_PATH)
+                            xml_converter, read_evtx_files, EVTX_LOGS_PATH)
 from console_analyse import search_xml_files, parse_xml_files
 from console_visualise import find_log_files, count_EventID, get_eventID_list, draw_graphs
 

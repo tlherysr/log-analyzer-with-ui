@@ -17,12 +17,14 @@
 #   limitations under the License.
 #
 #   Version v0.1.1
+import os
 import Evtx.Evtx as evtx
 import Evtx.Views as e_views
 
-
 def xml_converter(path):
-    xml_path = path.split('.')[0] + '.xml'
+    base_path, _ = os.path.splitext(path)
+    xml_path = f"{base_path}.xml"
+
     with open(xml_path, 'w+') as xmlfile:
         with evtx.Evtx(path) as log:
             print(e_views.XML_HEADER, file=xmlfile)
@@ -30,4 +32,3 @@ def xml_converter(path):
             for record in log.records():
                 print(record.xml(), file=xmlfile)
             print("</Events>", file=xmlfile)
-    
